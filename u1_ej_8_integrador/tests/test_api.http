@@ -96,3 +96,238 @@ Content-Type: application/json
   "stock_minimo": 5,
   "activo": true
 }
+
+
+-------------------------------------
+#Modulo proveedores
+### 1. POST - Crear proveedor correctamente
+# Esperado: 201 Created
+POST {{baseUrl}}/proveedores/
+Content-Type: application/json
+
+{
+  "codigo": "MUE-01",
+  "razon_social": "Muebles del Sur SA",
+  "cuit": "30123456789",
+  "email": "ventas@mueblesdelsur.com",
+  "telefono": "1123456789",
+  "activo": true
+}
+
+
+### 2. POST - Crear segundo proveedor
+# Esperado: 201 Created
+POST {{baseUrl}}/proveedores/
+Content-Type: application/json
+
+{
+  "codigo": "TEC-02",
+  "razon_social": "Tecnologia Argentina SRL",
+  "cuit": "30765432109",
+  "email": "contacto@tecarg.com",
+  "telefono": "1144556677",
+  "activo": true
+}
+
+
+### 3. POST - Crear tercer proveedor
+# Esperado: 201 Created
+POST {{baseUrl}}/proveedores/
+Content-Type: application/json
+
+{
+  "codigo": "PAP-03",
+  "razon_social": "Papeleria Central",
+  "cuit": "30987654321",
+  "email": "ventas@papeleriacentral.com",
+  "telefono": "1133445566",
+  "activo": true
+}
+
+
+### 4. POST - Código duplicado
+# RN-02
+# Esperado: 409 Conflict
+POST {{baseUrl}}/proveedores/
+Content-Type: application/json
+
+{
+  "codigo": "MUE-01",
+  "razon_social": "Otro Proveedor SA",
+  "cuit": "30111111111",
+  "email": "otro@proveedor.com",
+  "telefono": "1100000000",
+  "activo": true
+}
+
+
+### 5. POST - Código vacío
+# RN-01
+# Esperado: 422 Unprocessable Entity
+POST {{baseUrl}}/proveedores/
+Content-Type: application/json
+
+{
+  "codigo": "",
+  "razon_social": "Proveedor Invalido",
+  "cuit": "30222222222",
+  "email": "",
+  "telefono": "",
+  "activo": true
+}
+
+
+### 6. POST - Razón social con menos de 3 caracteres
+# RN-03
+# Esperado: 422 Unprocessable Entity
+POST {{baseUrl}}/proveedores/
+Content-Type: application/json
+
+{
+  "codigo": "ERR-04",
+  "razon_social": "AB",
+  "cuit": "30333333333",
+  "email": "",
+  "telefono": "",
+  "activo": true
+}
+
+
+### 7. GET - Listar todos los proveedores
+# Esperado: 200 OK
+# Debe devolver los proveedores creados
+GET {{baseUrl}}/proveedores/
+
+
+### 8. GET - Listar con paginación
+# Esperado: 200 OK
+# Debe devolver como máximo 2 proveedores
+GET {{baseUrl}}/proveedores/?skip=0&limit=2
+
+
+### 9. GET - Segunda página
+# Esperado: 200 OK
+# Salta los primeros 2 proveedores
+GET {{baseUrl}}/proveedores/?skip=2&limit=2
+
+
+### 10. GET - Filtrar solo proveedores activos
+# Esperado: 200 OK
+# Inicialmente deben aparecer los 3 proveedores
+GET {{baseUrl}}/proveedores/?activo=true
+
+
+### 11. GET - Consultar proveedor existente por ID
+# HU-03
+# Esperado: 200 OK
+GET {{baseUrl}}/proveedores/1
+
+
+### 12. GET - Consultar proveedor inexistente
+# RN-04
+# Esperado: 404 Not Found
+GET {{baseUrl}}/proveedores/999
+
+
+### 13. PUT - Actualizar completamente un proveedor
+# HU-04
+# Esperado: 200 OK
+PUT {{baseUrl}}/proveedores/1
+Content-Type: application/json
+
+{
+  "codigo": "MUE-10",
+  "razon_social": "Muebles del Sur Actualizado SA",
+  "cuit": "30123456789",
+  "email": "nuevo@mueblesdelsur.com",
+  "telefono": "1199999999",
+  "activo": true
+}
+
+
+### 14. GET - Verificar actualización del proveedor
+# Esperado: 200 OK
+# Debe mostrar codigo MUE-10 y los datos actualizados
+GET {{baseUrl}}/proveedores/1
+
+
+### 15. PUT - Actualizar proveedor inexistente
+# RN-04
+# Esperado: 404 Not Found
+PUT {{baseUrl}}/proveedores/999
+Content-Type: application/json
+
+{
+  "codigo": "NEX-99",
+  "razon_social": "Proveedor Inexistente",
+  "cuit": "30444444444",
+  "email": "noexiste@test.com",
+  "telefono": "1188888888",
+  "activo": true
+}
+
+
+### 16. PUT - Actualizar usando el código de otro proveedor
+# RN-02
+# El proveedor 1 ya tiene el código MUE-10.
+# Intentamos asignarlo al proveedor 2.
+# Esperado: 409 Conflict
+PUT {{baseUrl}}/proveedores/2
+Content-Type: application/json
+
+{
+  "codigo": "MUE-10",
+  "razon_social": "Tecnologia Argentina SRL",
+  "cuit": "30765432109",
+  "email": "contacto@tecarg.com",
+  "telefono": "1144556677",
+  "activo": true
+}
+
+
+### 17. PUT - Desactivar proveedor existente
+# HU-05
+# Esperado: 200 OK
+# El campo activo debe quedar en false
+PUT {{baseUrl}}/proveedores/1/desactivar
+
+### 18. GET - Filtrar solo proveedores inactivos
+# Esperado: 200 OK
+# Debe aparecer el proveedor con ID 1
+GET {{baseUrl}}/proveedores/?activo=false
+
+
+### 19. GET - Filtrar solo proveedores activos después de desactivar
+# Esperado: 200 OK
+# El proveedor con ID 1 no debe aparecer
+GET {{baseUrl}}/proveedores/?activo=true
+
+
+### 20. PUT - Intentar desactivar nuevamente el mismo proveedor
+# RN-05
+# Esperado: 409 Conflict
+PUT {{baseUrl}}/proveedores/1/desactivar
+
+
+### 21. PUT - Desactivar proveedor inexistente
+# RN-04
+# Esperado: 404 Not Found
+PUT {{baseUrl}}/proveedores/999/desactivar
+
+
+### 22. GET - skip inválido
+# Validación de Query Parameter
+# Esperado: 422 Unprocessable Entity
+GET {{baseUrl}}/proveedores/?skip=-1
+
+
+### 23. GET - limit menor al permitido
+# Validación: limit debe ser >= 1
+# Esperado: 422 Unprocessable Entity
+GET {{baseUrl}}/proveedores/?limit=0
+
+
+### 24. GET - limit mayor al permitido
+# Validación: limit debe ser <= 50
+# Esperado: 422 Unprocessable Entity
+GET {{baseUrl}}/proveedores/?limit=51
